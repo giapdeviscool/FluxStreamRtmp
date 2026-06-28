@@ -1,0 +1,12 @@
+server:
+  app: GLIVE
+  host: 0.0.0.0
+  rtmp:
+    port: 1999
+  http:
+    port: 8080
+database:
+  url: postgres://glive:glive@localhost:5433/glive
+
+logger:
+  level: debug
