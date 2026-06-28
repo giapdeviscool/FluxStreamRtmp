@@ -3,6 +3,8 @@ use clap::Parser;
 use my_rtmp_standalone::routes::stream_route;
 use my_rtmp_standalone::state::ServerState;
 use my_rtmp_standalone::{config::serverconfig::ServerConfig, core::rtmp::RtmpServer};
+use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -56,6 +58,16 @@ async fn build_http(server_state: ServerState) {
     }
 }
 
+async fn build_database_connection(config: &ServerConfig) -> Result<PgPool, sqlx::Error> {
+    let database_url = &config.database.url;
+    tracing::info!("Connecting to database: {}", database_url);
+    let db_pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(database_url)
+        .await;
+    db_pool
+}
+
 async fn run_server(server_state: ServerState) {
     tokio::join!(
         build_rtmp(server_state.clone()),
@@ -70,6 +82,16 @@ async fn main() {
 
     // 2. Load config
     let config = load_config();
-    let server_state = ServerState::new(config.clone());
+    let db_pool = match build_database_connection(&config).await {
+        Ok(pool) => {
+            tracing::info!("Database connection established successfully");
+            pool
+        }
+        Err(e) => {
+            tracing::error!("Failed to build database connection: {}", e);
+            return;
+        }
+    };
+    let server_state = ServerState::new(config, db_pool);
     run_server(server_state).await;
 }

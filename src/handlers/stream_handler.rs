@@ -29,6 +29,7 @@ pub async fn get_stream(
     State(_server_state): State<ServerState>,
     Path(stream_id): Path<Uuid>,
 ) -> Result<Json<StreamResponse>, ServerError> {
+    tracing::info!("Get stream: {}", stream_id);
     Ok(Json(StreamResponse {
         stream_id,
         app: "GLIVE".to_string(),

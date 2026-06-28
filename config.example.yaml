@@ -1,10 +1,12 @@
 server:
+  app: GLIVE
   host: 0.0.0.0
-  port: 1935
-app:
-  name: GLIVE
+  rtmp:
+    port: 1999
+  http:
+    port: 9876
 database:
-  url: postgres://glive:glive@localhost:5433/glive
+  url: postgres://glive:glive@localhost:7654/glive
 
 logger:
   level: debug
