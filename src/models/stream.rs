@@ -6,7 +6,6 @@ use uuid::Uuid;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Stream {
     pub id: Uuid,
-    pub stream_id: Uuid,
     pub app: String,
     pub stream_name: String,
     pub stream_key: String,
