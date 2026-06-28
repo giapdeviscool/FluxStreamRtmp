@@ -34,7 +34,7 @@ impl SessionHandler for RtmpHandler {
         Ok(())
     }
 
-    async fn on_unpublish(&mut self, stream_id: u32) -> Result<(), ServerSessionError> {
+    async fn on_unpublish(&mut self, _stream_id: u32) -> Result<(), ServerSessionError> {
         Ok(())
     }
 }
