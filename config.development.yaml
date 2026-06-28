@@ -4,7 +4,7 @@ server:
   rtmp:
     port: 1999
   http:
-    port: 8080
+    port: 9876
 database:
   url: postgres://glive:glive@localhost:5433/glive
 

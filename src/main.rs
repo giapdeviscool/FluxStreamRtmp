@@ -39,16 +39,28 @@ async fn build_http(server_state: ServerState) {
     let port = server_state.config.server.http.port;
     let host = &server_state.config.server.host;
     let http_address = format!("{}:{}", host, port);
-    let listener = tokio::net::TcpListener::bind(&http_address)
-        .await
-        .unwrap_or_else(|e| panic!("Failed to bind to {}: {}", http_address, e));
+    let listener = match tokio::net::TcpListener::bind(&http_address).await {
+        Ok(listener) => listener,
+        Err(e) => {
+            tracing::error!("HTTP server error: {}", e);
+            return;
+        }
+    };
 
-    tracing::info!("HTTP Server is running on http://{}", http_address);
-    let app = Router::new().nest("/stream", stream_route::route(server_state.clone()));
+    tracing::info!("HTTP Server is running on http://{}:{}", "127.0.0.1", port);
+    let app = Router::new()
+        .nest("/stream", stream_route::route())
+        .with_state(server_state);
+    if let Err(e) = axum::serve(listener, app).await {
+        tracing::error!("HTTP server error: {}", e);
+    }
+}
 
-    // if let Err(e) = axum::serve(listener, app).await {
-    //     tracing::error!("HTTP server error: {}", e);
-    // }
+async fn run_server(server_state: ServerState) {
+    tokio::join!(
+        build_rtmp(server_state.clone()),
+        build_http(server_state.clone())
+    );
 }
 
 #[tokio::main]
@@ -59,4 +71,5 @@ async fn main() {
     // 2. Load config
     let config = load_config();
     let server_state = ServerState::new(config.clone());
+    run_server(server_state).await;
 }
